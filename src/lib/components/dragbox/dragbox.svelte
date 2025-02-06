@@ -122,5 +122,6 @@
 		font-size: var(--dragbox-size);
 		color: var(--text);
 		cursor: pointer;
+		touch-action: none;
 	}
 </style>

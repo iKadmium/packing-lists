@@ -32,30 +32,36 @@
 	});
 
 	function handleTouchMove(event: TouchEvent) {
+		event.preventDefault();
 		lastY = event.touches[0].clientY;
 		onmove(lastY);
 	}
 
 	function handleTouchStart(event: TouchEvent) {
+		event.preventDefault();
 		onstart();
 	}
 
 	function handleTouchEnd(event: TouchEvent) {
+		event.preventDefault();
 		onend(lastY);
 	}
 
 	function handleMouseMove(event: MouseEvent) {
 		if (!mouseIsDown) return;
+		event.preventDefault();
 		lastY = event.clientY;
 		onmove(lastY);
 	}
 
 	function handleMouseDown(event: MouseEvent) {
+		event.preventDefault();
 		mouseIsDown = true;
 		onstart();
 	}
 
 	function handleMouseUp(event: MouseEvent) {
+		event.preventDefault();
 		mouseIsDown = false;
 		onend(lastY);
 	}
@@ -85,5 +91,6 @@
 		align-items: center;
 		font-size: 24px;
 		cursor: move;
+		touch-action: none;
 	}
 </style>
