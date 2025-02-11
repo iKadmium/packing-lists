@@ -41,6 +41,7 @@
 		"vitest": "^3.0.0"
 	},
 	"dependencies": {
+		"@iconify-json/line-md": "^1.2.5",
 		"@types/better-sqlite3": "^7.6.12",
 		"better-sqlite3": "^11.8.1",
 		"dotenv": "^16.4.7",

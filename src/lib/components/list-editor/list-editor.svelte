@@ -1,22 +1,22 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { ListWithEntries } from '$lib/models/list-list';
+	import { flip } from 'svelte/animate';
+	import { fade, fly } from 'svelte/transition';
 	import CancelIcon from 'virtual:icons/mdi/cancel';
 	import SaveIcon from 'virtual:icons/mdi/content-save';
 	import AddIcon from 'virtual:icons/mdi/create-new-folder';
 	import DeleteIcon from 'virtual:icons/mdi/delete';
 	import Button from '../button/button.svelte';
-	import Modal from '../modal/modal.svelte';
 	import Draggable from '../draggable/draggable.svelte';
-	import { crossfade, fade, fly } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
+	import Modal from '../modal/modal.svelte';
 
 	let {
 		initial,
 		onSubmit
 	}: {
 		initial?: ListWithEntries;
-		onSubmit: (list: ListWithEntries) => void;
+		onSubmit: (list: ListWithEntries) => unknown | Promise<unknown>;
 	} = $props();
 
 	const list = $state<ListWithEntries>(initial || { title: '', items: [{ title: '', order: 0 }] });
@@ -24,12 +24,17 @@
 	let draggingIndex: number | undefined = $state(undefined);
 	let draggingTargetIndex: number | undefined = $state(undefined);
 	let itemsRef: HTMLDivElement | undefined = $state(undefined);
+	let busy = $state(false);
 
-	function handleSubmit(event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }) {
+	async function handleSubmit(
+		event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }
+	) {
 		event.preventDefault();
 		const newList = $state.snapshot(list);
 		newList.items.forEach((item, i) => (item.order = i));
-		onSubmit(newList);
+		busy = true;
+		await onSubmit(newList);
+		busy = false;
 	}
 
 	function handleRemoveItem(i: number) {
@@ -120,7 +125,7 @@
 		<Button onclick={() => list.items.push({ title: '', order: list.items.length })}>
 			<AddIcon />
 		</Button>
-		<Button elementType="submit"><SaveIcon /></Button>
+		<Button {busy} elementType="submit"><SaveIcon /></Button>
 		<Button elementType="button" color="delete" onclick={handleReturnClick}>
 			<CancelIcon />
 		</Button>

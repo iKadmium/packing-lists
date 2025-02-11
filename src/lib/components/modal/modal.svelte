@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import Button from '../button/button.svelte';
-	import { fade, fly } from 'svelte/transition';
 
 	interface ModalProps {
 		message: Snippet<[]>;
@@ -21,7 +20,7 @@
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
-<dialog class="modal" onclose={oncancel} bind:this={dialogRef} onclick={handleClick}>
+<dialog class="modal" bind:this={dialogRef} onclick={handleClick}>
 	<div class="modal-content">
 		<h2>{@render message()}</h2>
 		<div class="modal-buttons">

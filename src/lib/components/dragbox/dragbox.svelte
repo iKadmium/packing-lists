@@ -10,7 +10,7 @@
 	let containerRef = $state<HTMLDivElement | undefined>(undefined);
 
 	let minX = 0;
-	let maxX = $derived(() => (containerRef?.offsetWidth ?? 0) - (buttonRef?.offsetWidth ?? 0));
+	let maxX = $derived((containerRef?.offsetWidth ?? 0) - (buttonRef?.offsetWidth ?? 0));
 	let mouseDown = false;
 	let backgroundMix = $state('0%');
 
@@ -39,15 +39,15 @@
 		if (buttonX < minX) {
 			buttonX = minX;
 		}
-		if (buttonX > maxX()) {
-			buttonX = maxX();
+		if (buttonX > maxX) {
+			buttonX = maxX;
 		}
-		const mixpct = (buttonX / maxX()) * 100;
+		const mixpct = (buttonX / maxX) * 100;
 		backgroundMix = `${mixpct}%`;
 	}
 
 	function handleEnd() {
-		if (buttonX === maxX()) {
+		if (buttonX === maxX) {
 			onDragged();
 		} else {
 			setButtonX(0);
