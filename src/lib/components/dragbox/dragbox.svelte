@@ -6,29 +6,31 @@
 	let { onDragged }: { onDragged: () => void } = $props();
 
 	let buttonX = $state(0);
-	let buttonRef: HTMLButtonElement;
-	let containerRef: HTMLDivElement;
+	let buttonRef = $state<HTMLButtonElement | undefined>(undefined);
+	let containerRef = $state<HTMLDivElement | undefined>(undefined);
 
 	let minX = 0;
-	let maxX = 0;
+	let maxX = $derived(() => (containerRef?.offsetWidth ?? 0) - (buttonRef?.offsetWidth ?? 0));
 	let mouseDown = false;
 	let backgroundMix = $state('0%');
 
 	onMount(() => {
 		minX = 0;
-		maxX = containerRef.offsetWidth - buttonRef.offsetWidth;
 		if (browser) {
 			document?.addEventListener('mouseup', handleMouseUp);
+			document?.addEventListener('mousemove', handleMouseMove);
 		}
 	});
 
 	onDestroy(() => {
 		if (browser) {
 			document?.removeEventListener('mouseup', handleMouseUp);
+			document?.removeEventListener('mousemove', handleMouseMove);
 		}
 	});
 
 	function handleMove(clientX: number) {
+		if (!containerRef || !buttonRef) return;
 		setButtonX(clientX - containerRef.getBoundingClientRect().left - buttonRef.offsetWidth / 2);
 	}
 
@@ -37,15 +39,15 @@
 		if (buttonX < minX) {
 			buttonX = minX;
 		}
-		if (buttonX > maxX) {
-			buttonX = maxX;
+		if (buttonX > maxX()) {
+			buttonX = maxX();
 		}
-		const mixpct = (buttonX / maxX) * 100;
+		const mixpct = (buttonX / maxX()) * 100;
 		backgroundMix = `${mixpct}%`;
 	}
 
 	function handleEnd() {
-		if (buttonX === maxX) {
+		if (buttonX === maxX()) {
 			onDragged();
 		} else {
 			setButtonX(0);

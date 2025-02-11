@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import Button from '../button/button.svelte';
+	import { fade, fly } from 'svelte/transition';
 
 	interface ModalProps {
 		message: Snippet<[]>;
@@ -34,6 +35,14 @@
 	.modal {
 		background: unset;
 		border: unset;
+
+		&::backdrop {
+			background-color: hsl(from var(--crust) h s l / 50%);
+		}
+	}
+
+	.modal[open] {
+		animation: slide-up 300ms ease-in-out;
 	}
 
 	.modal-content {
@@ -43,6 +52,7 @@
 		color: var(--text);
 		margin: 1rem;
 		padding: 1.5rem;
+		transition: opacity 2s;
 
 		h2 {
 			margin: 0 0 1rem;
@@ -53,5 +63,16 @@
 		display: flex;
 		justify-content: flex-end;
 		gap: 1rem;
+	}
+
+	@keyframes slide-up {
+		from {
+			/* transform: translateY(100px); */
+			opacity: 0;
+		}
+		to {
+			/* transform: translateY(0); */
+			opacity: 1;
+		}
 	}
 </style>

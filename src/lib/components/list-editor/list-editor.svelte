@@ -8,6 +8,8 @@
 	import Button from '../button/button.svelte';
 	import Modal from '../modal/modal.svelte';
 	import Draggable from '../draggable/draggable.svelte';
+	import { crossfade, fade, fly } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
 
 	let {
 		initial,
@@ -25,8 +27,9 @@
 
 	function handleSubmit(event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }) {
 		event.preventDefault();
-		list.items.forEach((item, i) => (item.order = i));
-		onSubmit(list);
+		const newList = $state.snapshot(list);
+		newList.items.forEach((item, i) => (item.order = i));
+		onSubmit(newList);
 	}
 
 	function handleRemoveItem(i: number) {
@@ -88,18 +91,24 @@
 
 	<h2>Items</h2>
 	<div class="items" bind:this={itemsRef}>
-		{#each list.items as item, i}
-			{#if draggingTargetIndex === i}
-				<div class="drag-target"></div>
-			{/if}
-			<div class="list-item" class:dragging={draggingIndex === i}>
-				<Draggable
-					onmove={(y) => onDragMove(y, i)}
-					onstart={() => onDragStart(i)}
-					onend={(y) => onDragEnd(y)}
-				/>
-				<input type="text" class="input" bind:value={list.items[i].title} />
-				<Button color="delete" onclick={() => handleRemoveItem(i)}><DeleteIcon /></Button>
+		{#each list.items as item, i (item.order)}
+			<div
+				class="item-container"
+				animate:flip={{ duration: 300 }}
+				transition:fly={{ duration: 300 }}
+			>
+				{#if draggingTargetIndex === i}
+					<div class="drag-target" in:fade={{ duration: 200 }}></div>
+				{/if}
+				<div class="list-item" class:dragging={draggingIndex === i}>
+					<Draggable
+						onmove={(y) => onDragMove(y, i)}
+						onstart={() => onDragStart(i)}
+						onend={(y) => onDragEnd(y)}
+					/>
+					<input type="text" class="input" bind:value={list.items[i].title} />
+					<Button color="delete" onclick={() => handleRemoveItem(i)}><DeleteIcon /></Button>
+				</div>
 			</div>
 		{/each}
 		{#if draggingTargetIndex === list.items.length}
@@ -128,10 +137,6 @@
 </Modal>
 
 <style>
-	.dragging {
-		background-color: var(--surface1);
-	}
-
 	.drag-target {
 		height: 5px;
 		background-color: var(--peach);
@@ -161,11 +166,26 @@
 		display: flex;
 		align-items: stretch;
 		gap: 0.5rem;
+		border-radius: 0.5rem;
+		border-width: 1px;
+		border-style: solid;
+		border-color: transparent;
+	}
+
+	.dragging {
+		background-color: var(--surface1);
+		border-color: var(--peach);
 	}
 
 	.titled-row {
 		display: flex;
 		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.item-container {
+		display: flex;
+		flex-direction: column;
 		gap: 0.5rem;
 	}
 

@@ -7,16 +7,19 @@ export async function POST({ request }) {
     const db = getDb();
     const list: ListWithEntries = await request.json();
 
-    const listResult = await db.insert(lists).values({
-        title: list.title
-    });
-    const id = listResult.lastInsertRowid;
-    for (const item of list.items) {
-        await db.insert(listItems).values({
-            listId: id as number,
-            title: item.title,
-            order: item.order
+    let id: number | bigint | undefined;
+    await db.transaction(async (tx) => {
+        const listResult = await tx.insert(lists).values({
+            title: list.title
         });
-    }
+        id = listResult.lastInsertRowid;
+        for (const item of list.items) {
+            await tx.insert(listItems).values({
+                listId: id as number,
+                title: item.title,
+                order: item.order
+            });
+        }
+    });
     return json({ id });
 }
