@@ -2,16 +2,24 @@
 	import type { ListItem } from '$lib/models/list-list';
 
 	let { item }: { item: ListItem } = $props();
+	let checked = $state(false);
 </script>
 
 <div class="list-item">
-	<label><input type="checkbox" class="item-checkbox" />{item.title}</label>
+	<label class:checked>
+		<input type="checkbox" class="item-checkbox" bind:checked />
+		{item.title}
+	</label>
 </div>
 
 <style>
 	.list-item {
 		font-size: xx-large;
 		text-decoration: none;
+	}
+
+	.checked {
+		text-decoration: line-through;
 	}
 
 	.item-checkbox {
