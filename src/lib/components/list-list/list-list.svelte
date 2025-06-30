@@ -1,62 +1,59 @@
 <script lang="ts">
+	import { getDatabaseEntries } from '$lib/models/database';
 	import type { PackingList } from '$lib/models/list-list';
-	import Button from '../button/button.svelte';
+	import { fade } from 'svelte/transition';
+	import AddIcon from 'virtual:icons/mdi/create-new-folder';
 	import DeleteIcon from 'virtual:icons/mdi/delete';
 	import EditIcon from 'virtual:icons/mdi/pencil';
-	import AddIcon from 'virtual:icons/mdi/create-new-folder';
+	import Button from '../button/button.svelte';
 	import Modal from '../modal/modal.svelte';
-	import { fade } from 'svelte/transition';
-	import { getDatabaseEntries, type Database } from '$lib/models/database';
 
 	export interface ListListProps {
-		lists: Database<PackingList>;
+		lists: Record<string, PackingList>;
 	}
 
-	let { lists: listsInitial }: { lists: Database<PackingList> } = $props();
-	let lists = $state([...getDatabaseEntries(listsInitial).map(([_key, value]) => value)]);
-	let selectedList = $state<PackingList | null>(null);
+	let { lists: listsInitial }: { lists: Record<string, PackingList> } = $props();
+	let lists = $state(listsInitial);
+	let selectedListId = $state<string | null>(null);
+	let selectedList = $derived<PackingList | null | undefined>(selectedListId ? lists[selectedListId] : null);
 	let dialogRef: HTMLDialogElement | undefined = $state(undefined);
 	let busy = $state(false);
 
-	function handleDeleteClicked(list: PackingList) {
-		selectedList = list;
+	function handleDeleteClicked(id: string) {
+		selectedListId = id;
 		dialogRef?.showModal();
 	}
 
 	function handleCancelClick() {
 		dialogRef?.close();
-		selectedList = null;
+		selectedListId = null;
 	}
 
-	async function handleDeleteConfirm() {
+	async function handleDeleteConfirm(id: string) {
 		busy = true;
 		const list = selectedList;
 		if (!list) {
 			return;
 		}
 		await new Promise((r) => setTimeout(r, 1000));
-		await fetch(`/api/list/${list.id}`, { method: 'DELETE' });
-		lists = lists.filter((l) => l.id !== list.id);
+		await fetch(`/api/list/${id}`, { method: 'DELETE' });
+		delete lists[id];
 		busy = false;
 		dialogRef?.close();
 	}
 </script>
 
 <div class="container">
-	{#if lists.length === 0}
+	{#if Object.keys(lists).length === 0}
 		<p>No lists found</p>
 	{/if}
 
 	<div class="list-grid">
-		{#each lists as list}
+		{#each getDatabaseEntries(lists) as [key, list] (key)}
 			<div class="list-row" transition:fade>
-				<Button elementType="a" href={`/list/${list.id}`}>{list.title}</Button>
-				<Button elementType="a" color="edit" href={`/list/${list.id}/edit`}><EditIcon /></Button>
-				<Button
-					color="delete"
-					busy={busy && selectedList === list}
-					onclick={() => handleDeleteClicked(list)}
-				>
+				<Button elementType="a" href={`/list/${key}`}>{list.title}</Button>
+				<Button elementType="a" color="edit" href={`/list/${key}/edit`}><EditIcon /></Button>
+				<Button color="delete" busy={busy && selectedListId === key} onclick={() => handleDeleteClicked(key)}>
 					<DeleteIcon />
 				</Button>
 			</div>
@@ -71,7 +68,7 @@
 		Are you sure you want to delete {selectedList?.title}? This action cannot be undone.
 	{/snippet}
 	{#snippet actions()}
-		<Button color="delete" onclick={handleDeleteConfirm} {busy}>Delete</Button>
+		<Button color="delete" onclick={() => handleDeleteConfirm(selectedListId!)} {busy}>Delete</Button>
 	{/snippet}
 </Modal>
 

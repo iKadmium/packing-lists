@@ -1,16 +1,15 @@
 import { getStore, type GetWithMetadataResult } from '@netlify/blobs';
-import type { DataSource, WithId } from './types';
-import type { Database } from '$lib/models/database';
+import type { DataSource } from './types';
 import { env } from '$env/dynamic/private';
 
-export class NetlifyBlobsDataSource<T extends object, K extends string = 'id'>
-	implements DataSource<T, K>
-{
+type MetadataResult<T extends object, KeyType extends string | number | symbol> = { data: Record<KeyType, T> } & GetWithMetadataResult;
+
+export class NetlifyBlobsDataSource<T extends object, KeyType extends string = string> implements DataSource<T, KeyType> {
 	private store: ReturnType<typeof getStore>;
 	private key: string;
-	private keyProperty: K;
+	private keyProperty: string;
 
-	public constructor(filename: string, keyProperty: K = 'name' as K) {
+	public constructor(filename: string, keyProperty: string = 'id') {
 		if (env.NETLIFY_BLOBS_SITE_ID && env.NETLIFY_BLOBS_TOKEN) {
 			this.store = getStore({
 				name: 'data',
@@ -24,35 +23,34 @@ export class NetlifyBlobsDataSource<T extends object, K extends string = 'id'>
 		this.keyProperty = keyProperty;
 	}
 
-	public getKeyFromData(data: WithId<T, K>): string {
-		return data[this.keyProperty];
-	}
-
-	private async getAllWithMetadata(): Promise<{ data: Database<T> } & GetWithMetadataResult> {
+	private async getAllWithMetadata(): Promise<MetadataResult<T, KeyType>> {
 		const data = await this.store.getWithMetadata(this.key, {
 			type: 'text',
 			consistency: 'strong'
 		});
 		if (!data) {
-			return { data: {} as Database<T>, metadata: {} };
+			return { data: {} as Record<KeyType, T>, metadata: {} };
 		}
-		return { data: JSON.parse(data.data) as Database<T>, metadata: data.metadata };
+		return {
+			data: JSON.parse(data.data) as Record<KeyType, T>,
+			metadata: data.metadata
+		};
 	}
 
-	public async getAll(): Promise<Database<WithId<T, K>>> {
+	public async getAll(): Promise<Record<KeyType, T>> {
 		try {
 			const data = await this.getAllWithMetadata();
 			if (!data) {
-				return {};
+				return {} as Record<KeyType, T>;
 			}
-			return data.data as Database<WithId<T, K>>;
+			return data.data as Record<KeyType, T>;
 		} catch (error) {
 			console.error('Error reading from Netlify Blobs:', error);
-			return {};
+			return {} as Record<KeyType, T>;
 		}
 	}
 
-	public async get(id: string): Promise<WithId<T, K> | undefined> {
+	public async get(id: KeyType): Promise<T | undefined> {
 		const all = await this.getAll();
 		if (id in all) {
 			return all[id];
@@ -60,10 +58,15 @@ export class NetlifyBlobsDataSource<T extends object, K extends string = 'id'>
 		return undefined;
 	}
 
-	public async post(data: T): Promise<K> {
+	private generateId(): KeyType {
+		// Since KeyType is constrained to extend string, this is type-safe
+		return crypto.randomUUID() as KeyType;
+	}
+
+	public async post(data: T): Promise<KeyType> {
 		try {
 			const all = await this.getAllWithMetadata();
-			const id = crypto.randomUUID() as K; // Generate a unique ID
+			const id = this.generateId();
 			all.data[id] = data;
 			this.store.setJSON(this.key, all.data, { onlyIfMatch: all.etag });
 			return id;
@@ -73,7 +76,7 @@ export class NetlifyBlobsDataSource<T extends object, K extends string = 'id'>
 		}
 	}
 
-	public async put(key: string, data: T): Promise<void> {
+	public async put(key: KeyType, data: T): Promise<void> {
 		const all = await this.getAllWithMetadata();
 		if (key in all.data) {
 			all.data[key] = data;
@@ -83,7 +86,7 @@ export class NetlifyBlobsDataSource<T extends object, K extends string = 'id'>
 		}
 	}
 
-	public async delete(key: string): Promise<void> {
+	public async delete(key: KeyType): Promise<void> {
 		const all = await this.getAllWithMetadata();
 		if (key in all.data) {
 			delete all.data[key];
@@ -91,7 +94,7 @@ export class NetlifyBlobsDataSource<T extends object, K extends string = 'id'>
 		}
 	}
 
-	public async putMany(data: Database<T>): Promise<void> {
+	public async putMany(data: Record<KeyType, T>): Promise<void> {
 		try {
 			const all = await this.getAllWithMetadata();
 			for (const key in data) {

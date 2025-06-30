@@ -1,27 +1,22 @@
-import type { Database } from '$lib/models/database';
-import type { DataSource, WithId } from './types';
+import type { DataSource } from './types';
 
-export class FakeDataSource<T extends object, K extends string = 'id'> implements DataSource<T, K> {
-	getAll(): Promise<Database<WithId<T, K>>> {
-		const db = {} as Database<WithId<T, K>>;
-		return Promise.resolve(db);
+export class FakeDataSource<T extends object, KeyType extends string | number | symbol = string> implements DataSource<T, KeyType> {
+	getAll(): Promise<Record<KeyType, T>> {
+		return Promise.resolve({} as Record<KeyType, T>);
 	}
-	get(_id: string): Promise<WithId<T, K> | undefined> {
-		return Promise.resolve({} as WithId<T, K>);
+	get(_id: KeyType): Promise<T | undefined> {
+		return Promise.resolve(undefined);
 	}
-	post(_data: T): Promise<K> {
+	post(_data: T): Promise<KeyType> {
 		throw new Error('Method not implemented.');
 	}
-	put(_key: string, _data: T): Promise<void> {
+	put(_key: KeyType, _data: T): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
-	delete(_key: string): Promise<void> {
+	delete(_key: KeyType): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
-	putMany(_data: Database<T>): Promise<void> {
-		throw new Error('Method not implemented.');
-	}
-	getKeyFromData(_data: T): string {
+	putMany(_data: Record<KeyType, T>): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
 }

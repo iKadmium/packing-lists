@@ -16,10 +16,7 @@
 
 	let { elementType, onclick, href, children, color, busy }: ButtonProps = $props();
 
-	function getHsl(
-		color: ButtonColor | undefined,
-		elementType: ButtonElementType | undefined
-	): string {
+	function getHsl(color: ButtonColor | undefined, elementType: ButtonElementType | undefined): string {
 		if (elementType === 'submit') {
 			return 'var(--green)';
 		}

@@ -17,6 +17,7 @@ export const load: PageServerLoad<{ entry: PackingList }> = async ({ params }) =
 	}
 
 	return {
+		id: listId,
 		entry: listResult
 	};
 };

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import ListEditor from '$lib/components/list-editor/list-editor.svelte';
-	import type { NewPackingList, PackingList } from '$lib/models/list-list';
+	import type { PackingList } from '$lib/models/list-list';
 
-	async function handleSubmit(list: PackingList | NewPackingList) {
+	async function handleSubmit(list: PackingList) {
 		const result = await fetch('/api/list', {
 			method: 'POST',
 			headers: {

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import ListEditor from '$lib/components/list-editor/list-editor.svelte';
-	import type { NewPackingList, PackingList } from '$lib/models/list-list';
+	import type { PackingList } from '$lib/models/list-list';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
-	async function handleSubmit(list: PackingList | NewPackingList) {
-		await fetch(`/api/list/${data.entry.id}`, {
+	async function handleSubmit(list: PackingList) {
+		await fetch(`/api/list/${data.id}`, {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json'

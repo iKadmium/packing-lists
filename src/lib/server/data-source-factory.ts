@@ -12,24 +12,17 @@ import type { DataSource, DataSourceProvider } from './types';
  * @param useNetlifyBlobs Whether to use Netlify Blobs (default: false for Node.js filesystem)
  * @returns A DataSource implementation
  */
-export function createDataSource<T extends object, K extends string = 'id'>(
-    filename: string,
-    keyProperty: K = 'id' as K,
-    provider?: DataSourceProvider
-): DataSource<T, K> {
-    if (building) {
-        return new FakeDataSource<T, K>();
-    }
-    const dataSourceProvider: DataSourceProvider =
-        provider || (RUNTIME_ENVIRONMENT === 'node' ? 'nodefs' : 'netlifyblobs');
+export function createDataSource<T extends object, KeyType extends string = string>(filename: string, provider?: DataSourceProvider): DataSource<T, KeyType> {
+	if (building) {
+		return new FakeDataSource<T, KeyType>();
+	}
+	const dataSourceProvider: DataSourceProvider = provider || (RUNTIME_ENVIRONMENT === 'node' ? 'nodefs' : 'netlifyblobs');
 
-    console.log(`Using data source provider: ${dataSourceProvider} for file: ${filename}`);
-    console.log(`RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT}`);
-    switch (dataSourceProvider) {
-        case 'netlifyblobs':
-            return new NetlifyBlobsDataSource<T, K>(filename, keyProperty);
-        default:
-        case 'nodefs':
-            return new NodeFSDataSource<T, K>(filename, keyProperty);
-    }
+	switch (dataSourceProvider) {
+		case 'netlifyblobs':
+			return new NetlifyBlobsDataSource<T, KeyType>(filename);
+		default:
+		case 'nodefs':
+			return new NodeFSDataSource<T, KeyType>(filename);
+	}
 }

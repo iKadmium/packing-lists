@@ -9,28 +9,24 @@
 	import Button from '../button/button.svelte';
 	import Draggable from '../draggable/draggable.svelte';
 	import Modal from '../modal/modal.svelte';
-	import type { NewPackingList, PackingList } from '$lib/models/list-list';
+	import type { PackingList } from '$lib/models/list-list';
 
 	let {
 		initial,
 		onSubmit
 	}: {
 		initial?: PackingList;
-		onSubmit: (list: PackingList | NewPackingList) => unknown | Promise<unknown>;
+		onSubmit: (list: PackingList) => unknown | Promise<unknown>;
 	} = $props();
 
-	const list = $state<PackingList | NewPackingList>(
-		initial || { title: '', items: [{ title: '', order: 0 }] }
-	);
+	const list = $state<PackingList>(initial || { title: '', items: [{ title: '', order: 0 }] });
 	let dialogRef: HTMLDialogElement | undefined = $state(undefined);
 	let draggingIndex: number | undefined = $state(undefined);
 	let draggingTargetIndex: number | undefined = $state(undefined);
 	let itemsRef: HTMLDivElement | undefined = $state(undefined);
 	let busy = $state(false);
 
-	async function handleSubmit(
-		event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }
-	) {
+	async function handleSubmit(event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }) {
 		event.preventDefault();
 		const newList = $state.snapshot(list);
 		newList.items.forEach((item, i) => (item.order = i));
@@ -64,9 +60,7 @@
 		if (!itemsRef) return;
 		const childElements = Array.from(itemsRef.querySelectorAll<HTMLDivElement>('.list-item'));
 
-		const closest = childElements.reduce((prev, curr) =>
-			Math.abs(getMiddle(curr) - y) < Math.abs(getMiddle(prev) - y) ? curr : prev
-		);
+		const closest = childElements.reduce((prev, curr) => (Math.abs(getMiddle(curr) - y) < Math.abs(getMiddle(prev) - y) ? curr : prev));
 		if (y < getMiddle(closest)) {
 			draggingTargetIndex = childElements.indexOf(closest);
 		} else {
@@ -81,8 +75,7 @@
 	function onDragEnd(_y: number) {
 		if (draggingIndex !== undefined && draggingTargetIndex !== undefined) {
 			const removedItem = list.items.splice(draggingIndex, 1)[0];
-			const adjustedIndex =
-				draggingTargetIndex > draggingIndex ? draggingTargetIndex - 1 : draggingTargetIndex;
+			const adjustedIndex = draggingTargetIndex > draggingIndex ? draggingTargetIndex - 1 : draggingTargetIndex;
 			list.items.splice(adjustedIndex, 0, removedItem);
 		}
 		draggingIndex = undefined;
@@ -99,20 +92,12 @@
 	<h2>Items</h2>
 	<div class="items" bind:this={itemsRef}>
 		{#each list.items as item, i (item.order)}
-			<div
-				class="item-container"
-				animate:flip={{ duration: 300 }}
-				transition:fly={{ duration: 300 }}
-			>
+			<div class="item-container" animate:flip={{ duration: 300 }} transition:fly={{ duration: 300 }}>
 				{#if draggingTargetIndex === i}
 					<div class="drag-target" in:fade={{ duration: 200 }}></div>
 				{/if}
 				<div class="list-item" class:dragging={draggingIndex === i}>
-					<Draggable
-						onmove={(y) => onDragMove(y, i)}
-						onstart={() => onDragStart(i)}
-						onend={(y) => onDragEnd(y)}
-					/>
+					<Draggable onmove={(y) => onDragMove(y, i)} onstart={() => onDragStart(i)} onend={(y) => onDragEnd(y)} />
 					<input type="text" class="input" bind:value={list.items[i].title} />
 					<Button color="delete" onclick={() => handleRemoveItem(i)}><DeleteIcon /></Button>
 				</div>

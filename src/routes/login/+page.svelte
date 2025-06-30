@@ -80,14 +80,7 @@
 			<p>You are currently logged in</p>
 		{:else}
 			<label for="password">Password</label>
-			<input
-				type="password"
-				id="password"
-				bind:value={password}
-				placeholder="Enter admin password"
-				onkeypress={handleKeyPress}
-				disabled={loading}
-			/>
+			<input type="password" id="password" bind:value={password} placeholder="Enter admin password" onkeypress={handleKeyPress} disabled={loading} />
 		{/if}
 		{#if error}
 			<span class="danger">

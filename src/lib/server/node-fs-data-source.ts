@@ -1,26 +1,18 @@
 import { env } from '$env/dynamic/private';
 import { readFile, writeFile } from 'node:fs/promises';
-import type { Database } from '../models/database';
-import type { DataSource, WithId } from './types';
+import type { DataSource } from './types';
 
-export class NodeFSDataSource<T extends object, K extends string = 'id'>
-	implements DataSource<T, K> {
+export class NodeFSDataSource<T extends object, KeyType extends string = string> implements DataSource<T, KeyType> {
 	private filename: string;
-	private keyProperty: K;
 
-	public constructor(filename: string, keyProperty: K = 'id' as K) {
+	public constructor(filename: string) {
 		if (!env.DATA_ROOT) {
 			throw new Error('DATA_ROOT environment variable is not set');
 		}
 		this.filename = `${env.DATA_ROOT}/${filename}`;
-		this.keyProperty = keyProperty;
 	}
 
-	public getKeyFromData(data: WithId<T, K>): string {
-		return data[this.keyProperty];
-	}
-
-	public async getAll(): Promise<Database<WithId<T, K>>> {
+	public async getAll(): Promise<Record<KeyType, T>> {
 		try {
 			const contents = await readFile(this.filename, { encoding: 'utf-8' });
 
@@ -28,19 +20,19 @@ export class NodeFSDataSource<T extends object, K extends string = 'id'>
 				throw new Error('Failed to read file');
 			}
 
-			const data = JSON.parse(contents) as Database<WithId<T, K>>;
+			const data = JSON.parse(contents) as Record<KeyType, T>;
 			return data;
 		} catch (error) {
 			if ((error as NodeJS.ErrnoException)?.code === 'ENOENT') {
 				// If the file does not exist, return an empty object
-				return {};
+				return {} as Record<KeyType, T>;
 			}
 			console.error('Error reading file:', error);
-			return {};
+			return {} as Record<KeyType, T>;
 		}
 	}
 
-	public async get(id: string) {
+	public async get(id: KeyType) {
 		const all = await this.getAll();
 		if (id in all) {
 			return all[id];
@@ -48,12 +40,11 @@ export class NodeFSDataSource<T extends object, K extends string = 'id'>
 		return undefined;
 	}
 
-	public async post(data: T): Promise<K> {
+	public async post(data: T): Promise<KeyType> {
 		try {
 			const all = await this.getAll();
-			const id = crypto.randomUUID() as K; // Generate a unique ID
-			const withId = { ...data, [this.keyProperty]: id } as WithId<T, K>;
-			all[id] = withId;
+			const id = crypto.randomUUID() as KeyType; // Generate a unique ID
+			all[id] = data;
 
 			await writeFile(this.filename, JSON.stringify(all, null, 2));
 			return id;
@@ -63,7 +54,7 @@ export class NodeFSDataSource<T extends object, K extends string = 'id'>
 		}
 	}
 
-	public async put(key: string, data: WithId<T, K>): Promise<void> {
+	public async put(key: KeyType, data: T): Promise<void> {
 		const all = await this.getAll();
 		if (key in all) {
 			all[key] = data;
@@ -73,7 +64,7 @@ export class NodeFSDataSource<T extends object, K extends string = 'id'>
 		}
 	}
 
-	public async delete(key: string): Promise<void> {
+	public async delete(key: KeyType): Promise<void> {
 		const all = await this.getAll();
 		if (key in all) {
 			delete all[key];
@@ -81,11 +72,11 @@ export class NodeFSDataSource<T extends object, K extends string = 'id'>
 		}
 	}
 
-	public async putMany(data: Database<WithId<T, K>>): Promise<void> {
+	public async putMany(data: Record<KeyType, T>): Promise<void> {
 		try {
 			const all = await this.getAll();
-			Object.entries(data).forEach(([key, value]) => {
-				all[key] = value;
+			Object.entries<T>(data).forEach(([key, value]) => {
+				all[key as KeyType] = value;
 			});
 			await writeFile(this.filename, JSON.stringify(all, null, 2));
 		} catch (error) {
