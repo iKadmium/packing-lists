@@ -6,4 +6,5 @@ export interface PackingList {
 export interface ListItem {
 	title: string;
 	order: number;
+	quantity?: number;
 }

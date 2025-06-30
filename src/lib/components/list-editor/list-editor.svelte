@@ -9,7 +9,7 @@
 	import Button from '../button/button.svelte';
 	import Draggable from '../draggable/draggable.svelte';
 	import Modal from '../modal/modal.svelte';
-	import type { PackingList } from '$lib/models/list-list';
+	import type { PackingList } from '$lib/models/packing-list';
 
 	let {
 		initial,
@@ -19,7 +19,7 @@
 		onSubmit: (list: PackingList) => unknown | Promise<unknown>;
 	} = $props();
 
-	const list = $state<PackingList>(initial || { title: '', items: [{ title: '', order: 0 }] });
+	const list = $state<PackingList>(initial || { title: '', items: [{ title: '', order: 0, quantity: 1 }] });
 	let dialogRef: HTMLDialogElement | undefined = $state(undefined);
 	let draggingIndex: number | undefined = $state(undefined);
 	let draggingTargetIndex: number | undefined = $state(undefined);
@@ -28,11 +28,16 @@
 
 	async function handleSubmit(event: SubmitEvent & { currentTarget: EventTarget & HTMLFormElement }) {
 		event.preventDefault();
-		const newList = $state.snapshot(list);
-		newList.items.forEach((item, i) => (item.order = i));
-		busy = true;
-		await onSubmit(newList);
-		busy = false;
+		try {
+			const newList = $state.snapshot(list);
+			newList.items.forEach((item, i) => (item.order = i));
+			busy = true;
+			await onSubmit(newList);
+		} catch (error) {
+			console.error('Error submitting list:', error);
+		} finally {
+			busy = false;
+		}
 	}
 
 	function handleRemoveItem(i: number) {
@@ -98,6 +103,7 @@
 				{/if}
 				<div class="list-item" class:dragging={draggingIndex === i}>
 					<Draggable onmove={(y) => onDragMove(y, i)} onstart={() => onDragStart(i)} onend={(y) => onDragEnd(y)} />
+					<input type="number" class="input number-input" bind:value={list.items[i].quantity} min="0" />
 					<input type="text" class="input" bind:value={list.items[i].title} />
 					<Button color="delete" onclick={() => handleRemoveItem(i)}><DeleteIcon /></Button>
 				</div>
@@ -109,7 +115,7 @@
 	</div>
 
 	<div class="actions">
-		<Button onclick={() => list.items.push({ title: '', order: list.items.length })}>
+		<Button onclick={() => list.items.push({ title: '', order: list.items.length, quantity: 1 })} elementType="button">
 			<AddIcon />
 		</Button>
 		<Button {busy} elementType="submit"><SaveIcon /></Button>
@@ -191,6 +197,11 @@
 		background-color: var(--surface0);
 		color: var(--text);
 		font-size: 20px;
+	}
+
+	.number-input {
+		flex: 0;
+		width: 4rem;
 	}
 
 	h2 {

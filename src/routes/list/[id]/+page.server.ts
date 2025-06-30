@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { listDataSource } from '$lib/server';
-import type { PackingList } from '$lib/models/list-list';
+import type { PackingList } from '$lib/models/packing-list';
 
 export const load: PageServerLoad<{ entry: PackingList }> = async ({ params }) => {
 	const listId = params.id;

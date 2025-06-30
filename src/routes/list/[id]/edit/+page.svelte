@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import ListEditor from '$lib/components/list-editor/list-editor.svelte';
-	import type { PackingList } from '$lib/models/list-list';
+	import type { PackingList } from '$lib/models/packing-list';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();

@@ -1,4 +1,4 @@
-import type { PackingList } from '$lib/models/list-list';
+import type { PackingList } from '$lib/models/packing-list';
 import { listDataSource } from '$lib/server';
 import type { PageServerLoad } from './$types';
 

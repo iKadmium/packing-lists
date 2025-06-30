@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getDatabaseEntries } from '$lib/models/database';
-	import type { PackingList } from '$lib/models/list-list';
+	import type { PackingList } from '$lib/models/packing-list';
 	import { fade } from 'svelte/transition';
 	import AddIcon from 'virtual:icons/mdi/create-new-folder';
 	import DeleteIcon from 'virtual:icons/mdi/delete';

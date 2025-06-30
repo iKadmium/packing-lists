@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { PackingList } from '$lib/models/list-list';
+	import type { PackingList } from '$lib/models/packing-list';
 	import ListItem from '../list-item/list-item.svelte';
 
 	let { entry }: { entry: PackingList } = $props();

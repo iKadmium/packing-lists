@@ -9,12 +9,13 @@
 		href?: string;
 		children?: Snippet;
 		color?: ButtonColor;
+		disabled?: boolean;
 	}
 
 	export type ButtonColor = 'primary' | 'delete' | 'edit' | 'success';
 	export type ButtonElementType = 'a' | 'button' | 'submit';
 
-	let { elementType, onclick, href, children, color, busy }: ButtonProps = $props();
+	let { elementType, onclick, href, children, color, busy, disabled }: ButtonProps = $props();
 
 	function getHsl(color: ButtonColor | undefined, elementType: ButtonElementType | undefined): string {
 		if (elementType === 'submit') {
@@ -44,7 +45,7 @@
 		class="button"
 		type={elementType === 'submit' ? 'submit' : 'button'}
 		style={`--button-color: ${buttonColor};`}
-		disabled={busy}
+		disabled={busy || disabled}
 		onclick={() => onclick?.()}
 	>
 		{#if busy}
