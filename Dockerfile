@@ -1,29 +1,20 @@
-# Stage 1: Build
-FROM node:22-alpine AS build
-
+FROM node:latest as builder
 WORKDIR /app
+ENV RUNTIME_ENVIRONMENT=node
+
+RUN npm install -g pnpm
 
 COPY package.json pnpm-lock.yaml ./
-COPY drizzle ./drizzle
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN pnpm install
 
 COPY . .
+RUN pnpm run build
 
-RUN pnpm build
-
-# Stage 2: Run
-FROM node:22-alpine
-
+FROM node:latest
 WORKDIR /app
+ENV PUBLIC_DATA_ROOT=/app/data
 
-COPY --from=build /app/build ./build
-COPY --from=build /app/drizzle ./drizzle
-COPY --from=build /app/package.json ./
-COPY --from=build /app/pnpm-lock.yaml ./
-COPY --from=build /app/svelte.config.js ./
+COPY --from=builder /app/build ./
+RUN mkdir data
 
-RUN npm i -g pnpm && pnpm install --frozen-lockfile
-
-# ENV NODE_ENV=production
-
-CMD ["node", "build"]
+ENTRYPOINT ["node", "index.js"]
