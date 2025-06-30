@@ -12,10 +12,20 @@
 		disabled?: boolean;
 	}
 
+	export interface ButtonAProps {
+		elementType: 'a';
+		href: string;
+	}
+
+	export interface ButtonButtonProps {
+		elementType?: 'button' | 'submit';
+		onclick?: () => unknown | Promise<unknown>;
+	}
+
 	export type ButtonColor = 'primary' | 'delete' | 'edit' | 'success';
 	export type ButtonElementType = 'a' | 'button' | 'submit';
 
-	let { elementType, onclick, href, children, color, busy, disabled }: ButtonProps = $props();
+	let { elementType, onclick, href, children, color, busy, disabled }: ButtonProps & (ButtonAProps | ButtonButtonProps) = $props();
 
 	function getHsl(color: ButtonColor | undefined, elementType: ButtonElementType | undefined): string {
 		if (elementType === 'submit') {
@@ -36,6 +46,11 @@
 	}
 
 	const buttonColor = $derived(getHsl(color, elementType));
+
+	function handleClick(event: MouseEvent) {
+		event.preventDefault();
+		onclick?.();
+	}
 </script>
 
 {#if elementType === 'a'}
@@ -46,7 +61,7 @@
 		type={elementType === 'submit' ? 'submit' : 'button'}
 		style={`--button-color: ${buttonColor};`}
 		disabled={busy || disabled}
-		onclick={() => onclick?.()}
+		onclick={handleClick}
 	>
 		{#if busy}
 			<LoadingIcon />

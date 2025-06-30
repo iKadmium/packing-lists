@@ -22,15 +22,18 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+		width: 100%;
 
 		padding: 1rem;
 		border: 1px solid var(--text);
 		border-radius: 1rem;
+		box-sizing: border-box;
 	}
 
 	.container {
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+		width: 100%;
 	}
 </style>
