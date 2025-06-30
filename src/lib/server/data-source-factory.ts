@@ -21,7 +21,7 @@ export function createDataSource<T extends object, K extends string = 'id'>(
         return new FakeDataSource<T, K>();
     }
     const dataSourceProvider: DataSourceProvider =
-        provider || (RUNTIME_ENVIRONMENT === 'netlify' ? 'netlifyblobs' : 'nodefs');
+        provider || (RUNTIME_ENVIRONMENT === 'node' ? 'nodefs' : 'netlifyblobs');
 
     console.log(`Using data source provider: ${dataSourceProvider} for file: ${filename}`);
     console.log(`RUNTIME_ENVIRONMENT: ${RUNTIME_ENVIRONMENT}`);
