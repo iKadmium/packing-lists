@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { ListWithEntries } from '$lib/models/list-list';
+	import type { PackingList } from '$lib/models/list-list';
 	import ListItem from '../list-item/list-item.svelte';
 
-	let { entry }: { entry: ListWithEntries } = $props();
+	let { entry }: { entry: PackingList } = $props();
 </script>
 
 <div class="container">

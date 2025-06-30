@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import type { ListWithEntries } from '$lib/models/list-list';
 	import { flip } from 'svelte/animate';
 	import { fade, fly } from 'svelte/transition';
 	import CancelIcon from 'virtual:icons/mdi/cancel';
@@ -10,16 +9,19 @@
 	import Button from '../button/button.svelte';
 	import Draggable from '../draggable/draggable.svelte';
 	import Modal from '../modal/modal.svelte';
+	import type { NewPackingList, PackingList } from '$lib/models/list-list';
 
 	let {
 		initial,
 		onSubmit
 	}: {
-		initial?: ListWithEntries;
-		onSubmit: (list: ListWithEntries) => unknown | Promise<unknown>;
+		initial?: PackingList;
+		onSubmit: (list: PackingList | NewPackingList) => unknown | Promise<unknown>;
 	} = $props();
 
-	const list = $state<ListWithEntries>(initial || { title: '', items: [{ title: '', order: 0 }] });
+	const list = $state<PackingList | NewPackingList>(
+		initial || { title: '', items: [{ title: '', order: 0 }] }
+	);
 	let dialogRef: HTMLDialogElement | undefined = $state(undefined);
 	let draggingIndex: number | undefined = $state(undefined);
 	let draggingTargetIndex: number | undefined = $state(undefined);
@@ -58,7 +60,7 @@
 		return rect.top + rect.height / 2;
 	}
 
-	function onDragMove(y: number, index: number) {
+	function onDragMove(y: number, _index: number) {
 		if (!itemsRef) return;
 		const childElements = Array.from(itemsRef.querySelectorAll<HTMLDivElement>('.list-item'));
 
@@ -76,7 +78,7 @@
 		draggingIndex = index;
 	}
 
-	function onDragEnd(y: number) {
+	function onDragEnd(_y: number) {
 		if (draggingIndex !== undefined && draggingTargetIndex !== undefined) {
 			const removedItem = list.items.splice(draggingIndex, 1)[0];
 			const adjustedIndex =

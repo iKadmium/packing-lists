@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import ListEditor from '$lib/components/list-editor/list-editor.svelte';
-	import type { ListWithEntries } from '$lib/models/list-list';
+	import type { NewPackingList, PackingList } from '$lib/models/list-list';
 
-	let list = $state<ListWithEntries>({ title: '', items: [] });
-
-	async function handleSubmit(list: ListWithEntries) {
+	async function handleSubmit(list: PackingList | NewPackingList) {
 		const result = await fetch('/api/list', {
 			method: 'POST',
 			headers: {
@@ -13,7 +11,9 @@
 			},
 			body: JSON.stringify(list)
 		});
-		const body = (await result.json()) as { id: number };
+		if (!result.ok) {
+			throw new Error(`Failed to create list: ${result.statusText}`);
+		}
 		await goto(`/`);
 	}
 </script>

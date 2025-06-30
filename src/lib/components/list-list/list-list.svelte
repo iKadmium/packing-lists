@@ -1,19 +1,24 @@
 <script lang="ts">
-	import type { List } from '$lib/models/list-list';
+	import type { PackingList } from '$lib/models/list-list';
 	import Button from '../button/button.svelte';
 	import DeleteIcon from 'virtual:icons/mdi/delete';
 	import EditIcon from 'virtual:icons/mdi/pencil';
 	import AddIcon from 'virtual:icons/mdi/create-new-folder';
 	import Modal from '../modal/modal.svelte';
 	import { fade } from 'svelte/transition';
+	import { getDatabaseEntries, type Database } from '$lib/models/database';
 
-	let { lists: listsInitial }: { lists: List[] } = $props();
-	let lists = $state([...listsInitial]);
-	let selectedList = $state<List | null>(null);
+	export interface ListListProps {
+		lists: Database<PackingList>;
+	}
+
+	let { lists: listsInitial }: { lists: Database<PackingList> } = $props();
+	let lists = $state([...getDatabaseEntries(listsInitial).map(([_key, value]) => value)]);
+	let selectedList = $state<PackingList | null>(null);
 	let dialogRef: HTMLDialogElement | undefined = $state(undefined);
 	let busy = $state(false);
 
-	function handleDeleteClicked(list: List) {
+	function handleDeleteClicked(list: PackingList) {
 		selectedList = list;
 		dialogRef?.showModal();
 	}

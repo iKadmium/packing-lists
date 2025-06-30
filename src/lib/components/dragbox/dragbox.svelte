@@ -58,14 +58,14 @@
 		handleMove(event.touches[0].clientX);
 	}
 
-	function handleTouchEnd(event: TouchEvent) {
+	function handleTouchEnd(_event: TouchEvent) {
 		handleEnd();
 	}
 
-	function handleMouseDown(event: MouseEvent) {
+	function handleMouseDown(_event: MouseEvent) {
 		mouseDown = true;
 	}
-	function handleMouseUp(event: MouseEvent) {
+	function handleMouseUp(_event: MouseEvent) {
 		mouseDown = false;
 		handleEnd();
 	}
@@ -75,7 +75,7 @@
 		}
 	}
 
-	function handleBlur(event: FocusEvent) {
+	function handleBlur(_event: FocusEvent) {
 		mouseDown = false;
 		handleEnd();
 	}

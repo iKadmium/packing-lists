@@ -1,25 +1,22 @@
-import { getDb } from "$lib/server/db";
-import { listItems, lists } from "$lib/server/schema";
-import { eq } from "drizzle-orm";
-import type { ListWithEntries } from "../../../lib/models/list-list";
-import type { PageServerLoad } from "./$types";
-import { error } from "@sveltejs/kit";
+import { error } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+import { listDataSource } from '$lib/server';
+import type { PackingList } from '$lib/models/list-list';
 
-export const load: PageServerLoad<{ entry: ListWithEntries }> = async ({ params }) => {
-    const listId = parseInt(params.id);
-    const db = getDb();
-    const listResult = await db.select().from(lists).where(eq(lists.id, listId));
-    if (listResult.length === 0) {
-        error(404, { message: "List not found" });
-    }
+export const load: PageServerLoad<{ entry: PackingList }> = async ({ params }) => {
+	const listId = params.id;
 
-    const list = listResult[0];
-    const itemsResult = await db.select().from(listItems).where(eq(listItems.listId, listId)).orderBy(listItems.order);
+	if (!listId) {
+		error(400, { message: 'List ID is required' });
+	}
 
-    return {
-        entry: {
-            ...list,
-            items: itemsResult
-        }
-    };
+	const listResult = await listDataSource.get(listId);
+
+	if (!listResult) {
+		error(404, { message: `List with ID ${listId} not found` });
+	}
+
+	return {
+		entry: listResult
+	};
 };

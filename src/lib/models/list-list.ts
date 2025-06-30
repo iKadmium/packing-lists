@@ -1,15 +1,12 @@
-export interface List {
-    id?: number | bigint;
-    title: string;
+export type NewPackingList = Omit<PackingList, 'id'>
+
+export interface PackingList {
+	id: string;
+	title: string;
+	items: ListItem[];
 }
 
 export interface ListItem {
-    id?: number | bigint;
-    listId?: number | bigint;
-    title: string;
-    order: number;
-}
-
-export interface ListWithEntries extends List {
-    items: ListItem[];
+	title: string;
+	order: number;
 }

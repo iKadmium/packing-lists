@@ -1,35 +1,16 @@
-import type { ListWithEntries } from "$lib/models/list-list";
-import { getDb } from "$lib/server/db";
-import { listItems, lists } from "$lib/server/schema";
-import { json } from "@sveltejs/kit";
-import { eq } from "drizzle-orm";
+import { listDataSource } from '$lib/server/index.js';
+import { json } from '@sveltejs/kit';
 
 export async function DELETE({ params }) {
-    const db = getDb();
-    const id = Number(params.id);
-    await db.transaction(async (tx) => {
-        await tx.delete(listItems).where(eq(listItems.listId, id));
-        await tx.delete(lists).where(eq(lists.id, id));
-    });
-    return new Response(null, { status: 204 });
+	const id = params.id;
+	await listDataSource.delete(id);
+
+	return new Response(null, { status: 204 });
 }
 
 export async function PUT({ request }) {
-    const db = getDb();
-    const list: ListWithEntries = await request.json();
+	const packingList = await request.json();
+	await listDataSource.put(packingList.id, packingList);
 
-    await db.update(lists).set({ title: list.title }).where(eq(lists.id, list.id as number));
-
-    await db.transaction(async (tx) => {
-        await tx.delete(listItems).where(eq(listItems.listId, list.id as number));
-        for (const item of list.items) {
-            await tx.insert(listItems).values({
-                listId: list.id as number,
-                title: item.title,
-                order: item.order
-            });
-        }
-    });
-
-    return json({ id: list.id });
+	return json({ id: packingList.id });
 }
