@@ -10,11 +10,15 @@ env:
   IMAGE_NAME: packing-lists
   PUBLIC_DATA_ROOT: ./data
   RUNTIME_ENVIRONMENT: node
-permissions:
-  packages:write
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
     steps:
       - uses: actions/checkout@v4
       - name: Set up QEMU
