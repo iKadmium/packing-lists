@@ -84,7 +84,7 @@
 		display: grid;
 		gap: 1rem;
 		grid-template-columns: 1fr auto auto;
-		grid-template-rows: subgrid;
+		align-items: center;
 	}
 
 	.container {

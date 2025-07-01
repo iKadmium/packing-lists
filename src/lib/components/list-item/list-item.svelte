@@ -44,14 +44,13 @@
 		<input type="checkbox" checked={isCompleted} class="item-checkbox" value={isCompleted} onchange={handleChange} id={formId} name={formId} />
 
 		<div class="item-inner">
+			<div class="quantity-inner" class:checked={isCompleted}>
+				<label for={formId} class="quantity">{item.quantity} {item.title}</label>
+			</div>
+
 			<div class="quantity-controls">
 				<Button disabled={quantityCompleted === 0} color="delete" onclick={handleRemoveClick}>-</Button>
-				<label for={formId}>
-					<div class="quantity-inner" class:checked={isCompleted}>
-						{item.title}
-						<span class="quantity">{quantityCompleted} / {item.quantity}</span>
-					</div>
-				</label>
+				<span>{quantityCompleted} / {item.quantity}</span>
 				<Button disabled={item.quantity ? quantityCompleted >= item.quantity : false} color="success" onclick={handleAddClick}>+</Button>
 			</div>
 		</div>
@@ -67,9 +66,9 @@
 
 	.quantity-inner {
 		display: flex;
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
+		flex-wrap: wrap;
+		flex-direction: row;
+		gap: 1rem;
 	}
 
 	.single-item {
@@ -93,16 +92,18 @@
 		display: flex;
 		flex-direction: row;
 		align-items: center;
-		justify-content: space-between;
 		width: 100%;
+		justify-content: space-between;
 	}
 
 	@media (max-width: 600px) {
 		.list-item {
 			font-size: x-large;
 		}
+
 		.item-inner {
 			flex-direction: column;
+			align-items: flex-start;
 		}
 	}
 
