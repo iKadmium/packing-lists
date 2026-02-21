@@ -48,7 +48,9 @@
 	const buttonColor = $derived(getHsl(color, elementType));
 
 	function handleClick(event: MouseEvent) {
-		event.preventDefault();
+		if (elementType !== 'submit') {
+			event.preventDefault();
+		}
 		onclick?.();
 	}
 </script>
